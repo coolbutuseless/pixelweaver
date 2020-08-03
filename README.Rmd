@@ -1,0 +1,144 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = FALSE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+
+library(pixelweaver)
+```
+
+# pixelweaver  <img src="man/figures/logo-hex.png" align="right" width="300" />
+
+<!-- badges: start -->
+![](https://img.shields.io/badge/cool-useless-green.svg)
+<!-- badges: end -->
+
+`pixelweaver` provides functions for converting R matrices and arrays into a
+common packed integer representation - `ARGB32`
+
+The ARGB32 data is stored in memory and referenced by an external pointer.  This
+data can then either:
+
+* manipulated and then converted back to matrix or array 
+* be passed to other C library wrappers written in R which understand external pointers.
+* converted to a vector of raw values 
+
+
+### Why?
+
+*Rstats* commonly stores pixel information in arrays, where the R, G, B and A values
+are specified as separate planes of an array (in that order).  Values in the 
+array are commonly real numbers in the range [0, 1]
+
+Very few C graphics libraries support this planar colour representation. 
+
+One common format C libraries support is ARGB32 - where a single byte is 
+used to represent each of the A, R, G and B values (each value is in the range
+[0, 255]).  These
+bytes are then lumped together as a 4-byte sequence.
+
+`pixelweaver` provides functions for converting R's planar colour representation to/from
+the packed ARGB32 representation.
+
+An overview/schematic of the pixel representations and where `pixelweaver` sits is 
+illustrated below.
+
+
+![](man/figures/array-representation.png)
+
+## Future possibilities
+
+* Support copying into pre-allocated arrays to avoid having to allocate new
+  memory each time.
+* Faster algorithms for the transpose and shuffle.  MMX? SSE? AVX?
+* Other pixel formats e.g. RGBA32
+* Support for big-endian systems (are there any such systems in common use with R?)
+
+
+## Installation
+
+You can install from [GitHub](https://github.com/coolbutuseless/pixelweaver) with:
+
+``` r
+# install.package('remotes')
+remotes::install_github('coolbutuseless/pixelweaver')
+```
+
+## What's in the box
+
+* `argb32_to_planar()`, `planar_to_argb32()` - convert matrices and arrays to/from
+  packed ARGB32 format.  These functions store the ARGB32 data as a sequence of
+  bytes in memory and return an external pointer to this memory.
+* `argb32_to_raw()`, `raw_to_argb32()` - convert the package ARGB32 format from 
+  an external pointer (to data in memory) to a vector of raw values in R.
+
+
+## Conversion of an RGBA array to ARGB32 format and back again.
+
+```{r example, out.width = "40%"}
+library(pixelweaver)
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Create an an array with 3 planes representing RGB colour data
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+(arr <- array(seq(4*3*3)/36, c(4, 3, 3)))
+plot(as.raster(arr), interpolate = FALSE)
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Convert the R planar colour representation to packed ARGB32 format 
+# This is a pointer to a memory location that contains the data
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+argb32_ptr <- planar_to_argb32(arr, maxval = 1)
+argb32_ptr
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# View the raw data. Note the value = 255 every 4th value - this is the 
+# default alpha value set for each pixel
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+as.integer(argb32_to_raw(argb32_ptr))
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Convert the R, G and Blue values from the packed ARGB32 representation 
+# back into the original representation
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+(arr_out <- argb32_to_planar(argb32_ptr, 'rgb'))
+plot(as.raster(arr_out), interpolate = FALSE)
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Convert the R, G and Blue values from the packed ARGB32 representation 
+# back into a grey matrix using  0.3R + 0.59G + 0.11B
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+(mat_out <- argb32_to_planar(argb32_ptr, 'grey'))
+plot(as.raster(mat_out), interpolate = FALSE)
+```
+
+
+
+
+## Technical bits
+
+* ARGB32 or ARGB8888 format.
+* Each of A, R, G, B gets 1 byte (8 bits)
+* Together these 4 bytes fit in a standard 'int32'
+* 'A' (alpha) is in the most significant byte
+* x86 systems are little-endian so when viewing these bytes one at a time, the
+  order will be B, G, R, A.  i.e. from least signficant to most significant byte
+
+
+## Acknowledgements
+
+* R Core for developing and maintaining the language.
+* CRAN maintainers, for patiently shepherding packages onto CRAN and maintaining
+  the repository
