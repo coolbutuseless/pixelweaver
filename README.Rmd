@@ -19,6 +19,7 @@ library(pixelweaver)
 
 <!-- badges: start -->
 ![](https://img.shields.io/badge/cool-useless-green.svg)
+[![R build status](https://github.com/coolbutuseless/pixelweaver/workflows/R-CMD-check/badge.svg)](https://github.com/coolbutuseless/pixelweaver/actions)
 <!-- badges: end -->
 
 `pixelweaver` provides functions for converting R matrices and arrays into a

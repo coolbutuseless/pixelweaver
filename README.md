@@ -5,7 +5,8 @@
 
 <!-- badges: start -->
 
-![](https://img.shields.io/badge/cool-useless-green.svg)
+![](https://img.shields.io/badge/cool-useless-green.svg) [![R build
+status](https://github.com/coolbutuseless/pixelweaver/workflows/R-CMD-check/badge.svg)](https://github.com/coolbutuseless/pixelweaver/actions)
 <!-- badges: end -->
 
 `pixelweaver` provides functions for converting R matrices and arrays
@@ -120,7 +121,7 @@ argb32_ptr <- planar_to_argb32(arr, maxval = 1)
 argb32_ptr
 ```
 
-    #> <pointer: 0x7fd528e728b0>
+    #> <pointer: 0x7f88398a0310>
     #> attr(,"class")
     #> [1] "unsigned char"
 
