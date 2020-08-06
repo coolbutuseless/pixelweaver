@@ -3,11 +3,11 @@
 
 test_that("conversion to/from grey matrix works", {
   mat <- matrix(seq(4*3*1), c(4, 3))/255
-  argb32_ptr <- planar_to_argb32(mat, maxval = 1)
-  res  <- argb32_to_planar(argb32_ptr, 'grey')
+  packed_ptr <- planar_to_packed(mat, format = 0L, maxval = 1)
+  res  <- packed_to_planar(packed_ptr, format = 0L, nchannel = 1)
   expect_true(isTRUE(all.equal(mat, res)))
 
-  raw_vec <- argb32_to_raw(argb32_ptr)
+  raw_vec <- packed_to_raw(packed_ptr)
 
   raw_ref <- as.raw(c(
     1,  1,  1, 255,
@@ -26,8 +26,8 @@ test_that("conversion to/from grey matrix works", {
 
   expect_identical(raw_vec, raw_ref)
 
-  a2 <- raw_to_argb32(raw_vec, width = 3L, height = 4L)
-  r2 <- argb32_to_raw(a2)
+  a2 <- raw_to_packed(raw_vec, width = 3L, height = 4L)
+  r2 <- packed_to_raw(a2)
 
   expect_identical(raw_vec, r2)
 
@@ -37,12 +37,12 @@ test_that("conversion to/from grey matrix works", {
 
 test_that("conversion to/from rgb array works", {
   arr <- array(seq(4*3*3), c(4, 3, 3))/255
-  argb32_ptr <- planar_to_argb32(arr, maxval = 1)
-  res  <- argb32_to_planar(argb32_ptr, 'rgb')
+  packed_ptr <- planar_to_packed(arr, format = 0L, maxval = 1)
+  res  <- packed_to_planar(packed_ptr, format = 0L, nchannel = 3)
   expect_true(isTRUE(all.equal(arr, res)))
 
 
-  raw_vec <- argb32_to_raw(argb32_ptr)
+  raw_vec <- packed_to_raw(packed_ptr)
 
   raw_ref <- as.raw(c(
     0x19, 0x0d, 0x01, 0xff, 0x1d, 0x11, 0x05, 0xff, 0x21,
@@ -54,8 +54,8 @@ test_that("conversion to/from rgb array works", {
 
   expect_identical(raw_vec, raw_ref)
 
-  a2 <- raw_to_argb32(raw_vec, width = 3L, height = 4L)
-  r2 <- argb32_to_raw(a2)
+  a2 <- raw_to_packed(raw_vec, width = 3L, height = 4L)
+  r2 <- packed_to_raw(a2)
 
   expect_identical(raw_vec, r2)
 })
@@ -64,12 +64,12 @@ test_that("conversion to/from rgb array works", {
 
 test_that("conversion to/from rgba array works", {
   arr <- array(seq(4*3*4), c(4, 3, 4))/255
-  argb32_ptr <- planar_to_argb32(arr, maxval = 1)
-  res  <- argb32_to_planar(argb32_ptr, 'rgba')
+  packed_ptr <- planar_to_packed(arr, format = 0L, maxval = 1)
+  res  <- packed_to_planar(packed_ptr, format = 0L, nchannel = 4)
   expect_true(isTRUE(all.equal(arr, res)))
 
 
-  raw_vec <- argb32_to_raw(argb32_ptr)
+  raw_vec <- packed_to_raw(packed_ptr)
 
   raw_ref <- as.raw(c(
     0x19, 0x0d, 0x01, 0x25, 0x1d, 0x11, 0x05, 0x29, 0x21,
@@ -81,22 +81,22 @@ test_that("conversion to/from rgba array works", {
 
   expect_identical(raw_vec, raw_ref)
 
-  a2 <- raw_to_argb32(raw_vec, width = 3L, height = 4L)
-  r2 <- argb32_to_raw(a2)
+  a2 <- raw_to_packed(raw_vec, width = 3L, height = 4L)
+  r2 <- packed_to_raw(a2)
 
   expect_identical(raw_vec, r2)
 
 
 
-  expect_error(raw_to_argb32(raw_vec, width = 3L, height = 5L), "Length")
+  expect_error(raw_to_packed(raw_vec, width = 3L, height = 5L), "Length")
 })
 
 
 
 test_that("set_dim ok", {
   arr <- array(seq(4*3*4), c(4, 3, 4))/255
-  argb32_ptr <- planar_to_argb32(arr, maxval = 1)
-  argb32_set_dim(argb32_ptr, 10L, 10L)
+  packed_ptr <- planar_to_packed(arr, format = 0L, maxval = 1)
+  packed_set_dim(packed_ptr, 10L, 10L)
   expect_true(TRUE)
 })
 
@@ -104,13 +104,13 @@ test_that("set_dim ok", {
 
 test_that("some error conditions", {
   arr <- array(seq(4*3*5), c(4, 3, 5))/255
-  expect_error(planar_to_argb32(arr, maxval = 1), "3 or 4 planes")
+  expect_error(planar_to_packed(arr, format = 0L, maxval = 1), "3 or 4 planes")
 
-  expect_error(argb32_to_planar(mtcars), "Can't unpack type")
+  expect_error(packed_to_planar(mtcars), "Can't unpack type")
 
   arr <- array(seq(4*3*4), c(4, 3, 4))/255
-  argb32_ptr <- planar_to_argb32(arr, maxval = 1)
-  expect_error(argb32_to_planar(argb32_ptr, format = "goober"), "format")
+  packed_ptr <- planar_to_packed(arr, format = 0L, maxval = 1)
+  expect_error(packed_to_planar(packed_ptr, format = 0L, nchannel = 8), 'nchannel')
 
 })
 

@@ -1,44 +1,48 @@
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#' Set the image dimensions of the data in an argb32 object
+#' Set the image dimensions of the data in an packed pixel object
 #'
 #' Warning: if you set dimensions which don't match the data you'll
 #' likely get a segfault.
 #'
-#' @param argb32_ptr argb32 pointer
+#' @param packed_ptr packed pixel pointer
 #' @param width,height image dimensions in pixels
 #'
 #' @export
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-argb32_set_dim <- function(argb32_ptr, width, height) {
-  .Call("argb32_set_dim_", argb32_ptr, width, height)
+packed_set_dim <- function(packed_ptr, width, height) {
+  .Call("packed_set_dim_", packed_ptr, width, height)
 }
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#' Convert a matrix or array into packed ARGB32 format
+#' Convert a matrix or array into packed pixel format
 #'
 #' @param robj R representation. Either a matrix (representing grey values), or
-#'        an array with 3 or 4 planes (representing RGB and RGBA colour
-#'        respectively).  Data must be double preceision floating point.
+#'        an array with 3 or 4 planes (representing RGB and RGBA color
+#'        respectively).  Data must be double precision floating point.
 #' @param maxval specify the maximum possible value in the \code{robj} data.
-#'        This is used to scale the results into the desired range [0, 255].
+#'        This is used to scale the results into the range required for packed
+#'        pixel representations.
 #'        For standard R image representations, data is often in the range
 #'        [0,1] so use \code{maxval=1}
+#' @param format Integer value denoting the packed format. 0L = ARGB32,
+#'        1L = RGBA32, 2L = ABGR32.  See also \code{?pack_fmt}.
 #'
 #' @export
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-planar_to_argb32 <- function(robj, maxval) {
+planar_to_packed <- function(robj, format, maxval) {
+
 
   if (is.matrix(robj)) {
-    .Call("dbl_matrix_grey_to_packed_argb32_", robj, maxval)
+    .Call("dbl_array1_to_packed_", robj, maxval, format)
   } else if (is.array(robj)) {
     dims <- dim(robj)
     if (dims[3] == 3L) {
-      .Call("dbl_array_rgb_to_packed_argb32_", robj, maxval)
+      .Call("dbl_array3_to_packed_", robj, maxval, format)
     } else if (dims[3] == 4L) {
-      .Call("dbl_array_rgba_to_packed_argb32_", robj, maxval)
+      .Call("dbl_array4_to_packed_", robj, maxval, format)
     } else {
       stop("If 'robj' is array, must have 3 or 4 planes")
     }
@@ -48,32 +52,30 @@ planar_to_argb32 <- function(robj, maxval) {
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#' Convert an object with packed ARGB32 pixels into array of planar colour or matrix
+#' Convert an object with packed pixels into array of color values in R
 #'
-#' @param argb32_ptr An object containing ARGB32 data. this is an external pointer
+#' @inheritParams planar_to_packed
+#' @param packed_ptr An object containing packed pixel data. This is an external pointer
 #'                  to data.
-#' @param format one of 'rgba', 'rgb', or 'grey' to indicate the result should
-#'        be an RGBA array, an RGB array or a matrix, respectively
+#' @param nchannel Number of color channels in the planar representation. 1 = grey,
+#'        3 = RGB, 4 = RGBA
 #'
 #' @export
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-argb32_to_planar <- function(argb32_ptr, format = 'rgba') {
-  if (typeof(argb32_ptr) == 'externalptr' && inherits(argb32_ptr, 'unsigned char')) {
-    # message("Unweaving ARGB32 external ptr")
+packed_to_planar <- function(packed_ptr, format, nchannel) {
+  if (typeof(packed_ptr) == 'externalptr' && inherits(packed_ptr, 'unsigned char')) {
   } else {
     stop("Can't unpack type")
   }
 
-  format <- tolower(format)
-
-  if (format == 'rgba') {
-    .Call("packed_argb32_to_dbl_array_rgba_", argb32_ptr)
-  } else if (format == 'rgb') {
-    .Call("packed_argb32_to_dbl_array_rgb_", argb32_ptr)
-  } else if (format %in% c('grey', 'gray')) {
-    .Call("packed_argb32_to_dbl_matrix_grey_", argb32_ptr)
+  if (nchannel == 4) {
+    .Call("packed_to_dbl_array4_", packed_ptr, format)
+  } else if (nchannel == 3) {
+    .Call("packed_to_dbl_array3_", packed_ptr, format)
+  } else if (nchannel == 1) {
+    .Call("packed_to_dbl_array1_", packed_ptr, format)
   } else {
-    stop("Don't know how to deal with format = ", format)
+    stop("Don't know how to deal with nchannel = ", nchannel)
   }
 
 }

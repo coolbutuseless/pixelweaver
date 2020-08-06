@@ -10,9 +10,9 @@ status](https://github.com/coolbutuseless/pixelweaver/workflows/R-CMD-check/badg
 <!-- badges: end -->
 
 `pixelweaver` provides functions for converting R matrices and arrays
-into a common packed integer representation - `ARGB32`
+into common packed pixel representations
 
-The ARGB32 data is stored in memory and referenced by an external
+The packed pixel data is stored in memory and referenced by an external
 pointer. This data can then either:
 
   - manipulated and then converted back to matrix or array
@@ -27,29 +27,28 @@ and A values are specified as separate planes of an array (in that
 order). Values in the array are commonly real numbers in the range \[0,
 1\]
 
-Very few C graphics libraries support this planar colour representation.
+Very few C graphics libraries support this planar color representation.
 
-One common format C libraries support is ARGB32 - where a single byte is
-used to represent each of the A, R, G and B values (each value is in the
-range \[0, 255\]). These bytes are then lumped together as a 4-byte
-sequence.
+One common format C libraries support is packing the R, G, B and A
+values for a single pixel into a 32-bit sequence - with 1-byte for each
+of the colors.
 
-`pixelweaver` provides functions for converting R’s planar colour
-representation to/from the packed ARGB32 representation.
+`pixelweaver` provides functions for converting R’s planar color
+representation to/from packed pixel representation.
 
 An overview/schematic of the pixel representations and where
 `pixelweaver` sits is illustrated below.
 
 ![](man/figures/array-representation.png)
 
-## Future possibilities
+## ToDo
 
+  - Support direct use of a vector of raw data in `packed_to_planar()`
+  - Support direct output of a vector of raw data from
+    `planar_to_packed()`
   - Support copying into pre-allocated arrays to avoid having to
     allocate new memory each time.
   - Faster algorithms for the transpose and shuffle. MMX? SSE? AVX?
-  - Other pixel formats e.g. RGBA32
-  - Support for big-endian systems (are there any such systems in common
-    use with R?)
 
 ## Installation
 
@@ -63,13 +62,17 @@ remotes::install_github('coolbutuseless/pixelweaver')
 
 ## What’s in the box
 
-  - `argb32_to_planar()`, `planar_to_argb32()` - convert matrices and
-    arrays to/from packed ARGB32 format. These functions store the
-    ARGB32 data as a sequence of bytes in memory and return an external
+  - `packed_to_planar()`, `planar_to_packed()` - convert matrices and
+    arrays to/from packed pixel formats. These functions store the
+    packed data as a sequence of bytes in memory and return an external
     pointer to this memory.
-  - `argb32_to_raw()`, `raw_to_argb32()` - convert the package ARGB32
+  - `packed_to_raw()`, `raw_to_packed()` - convert the package packed
     format from an external pointer (to data in memory) to a vector of
-    raw values in R.
+    raw values in R. These functions are different from the `planar`
+    functions in that the data is returned in the same layout as the
+    memory i.e. raw vector represents pixels in row-major format, not
+    column-major
+  - Support for ARGB32, RGBA32 and ABGR32 pixel format.
 
 ## Conversion of an RGBA array to ARGB32 format and back again.
 
@@ -77,7 +80,7 @@ remotes::install_github('coolbutuseless/pixelweaver')
 library(pixelweaver)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Create an an array with 3 planes representing RGB colour data
+# Create an an array with 3 planes representing RGB color data
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 (arr <- array(seq(4*3*3)/36, c(4, 3, 3)))
 ```
@@ -114,14 +117,14 @@ plot(as.raster(arr), interpolate = FALSE)
 
 ``` r
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Convert the R planar colour representation to packed ARGB32 format 
+# Convert the R planar color representation to packed ARGB32 format 
 # This is a pointer to a memory location that contains the data
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-argb32_ptr <- planar_to_argb32(arr, maxval = 1)
-argb32_ptr
+packed_ptr <- planar_to_packed(arr, format = pack_fmt$ARGB32, maxval = 1)
+packed_ptr
 ```
 
-    #> <pointer: 0x7f88398a0310>
+    #> <pointer: 0x7fbc286983c0>
     #> attr(,"class")
     #> [1] "unsigned char"
 
@@ -130,7 +133,7 @@ argb32_ptr
 # View the raw data. Note the value = 255 every 4th value - this is the 
 # default alpha value set for each pixel
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-as.integer(argb32_to_raw(argb32_ptr))
+as.integer(packed_to_raw(packed_ptr))
 ```
 
     #>  [1] 177  92   7 255 205 120  35 255 233 148  63 255 184  99  14 255 212 127  42
@@ -142,7 +145,7 @@ as.integer(argb32_to_raw(argb32_ptr))
 # Convert the R, G and Blue values from the packed ARGB32 representation 
 # back into the original representation
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-(arr_out <- argb32_to_planar(argb32_ptr, 'rgb'))
+(arr_out <- packed_to_planar(packed_ptr, format = pack_fmt$ARGB32, nchannel = 3))
 ```
 
     #> , , 1
@@ -180,7 +183,7 @@ plot(as.raster(arr_out), interpolate = FALSE)
 # Convert the R, G and Blue values from the packed ARGB32 representation 
 # back into a grey matrix using  0.3R + 0.59G + 0.11B
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-(mat_out <- argb32_to_planar(argb32_ptr, 'grey'))
+(mat_out <- packed_to_planar(packed_ptr, format = pack_fmt$ARGB32, nchannel = 1))
 ```
 
     #>           [,1]      [,2]      [,3]
@@ -194,16 +197,6 @@ plot(as.raster(mat_out), interpolate = FALSE)
 ```
 
 <img src="man/figures/README-example-3.png" width="40%" />
-
-## Technical bits
-
-  - ARGB32 or ARGB8888 format.
-  - Each of A, R, G, B gets 1 byte (8 bits)
-  - Together these 4 bytes fit in a standard ‘int32’
-  - ‘A’ (alpha) is in the most significant byte
-  - x86 systems are little-endian so when viewing these bytes one at a
-    time, the order will be B, G, R, A. i.e. from least signficant to
-    most significant byte
 
 ## Acknowledgements
 
