@@ -9,7 +9,7 @@
 #' @param raw_vec raw vector
 #' @param width,height image dimensions
 #'
-#' @return An external pointer to packed pixel data
+#' @return An external pointer to packed color data
 #' @export
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 raw_to_packed <- function(raw_vec, width, height) {

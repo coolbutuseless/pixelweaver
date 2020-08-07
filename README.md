@@ -9,43 +9,31 @@
 status](https://github.com/coolbutuseless/pixelweaver/workflows/R-CMD-check/badge.svg)](https://github.com/coolbutuseless/pixelweaver/actions)
 <!-- badges: end -->
 
-`pixelweaver` provides functions for converting R matrices and arrays
-into common packed pixel representations
-
-The packed pixel data is stored in memory and referenced by an external
-pointer. This data can then either:
-
-  - manipulated and then converted back to matrix or array
-  - be passed to other C library wrappers written in R which understand
-    external pointers.
-  - converted to a vector of raw values
+`pixelweaver` provides functions for converting R arrays (representing
+planar colour) into packed colour representations
 
 ### Why?
 
-*Rstats* commonly stores pixel information in arrays, where the R, G, B
-and A values are specified as separate planes of an array (in that
-order). Values in the array are commonly real numbers in the range \[0,
-1\]
+When represening colour information in R, this is often stored in
+*arrays* where each plane of the array represents a different color.
+This is a **planar color** representation.
 
 Very few C graphics libraries support this planar color representation.
 
-One common format C libraries support is packing the R, G, B and A
-values for a single pixel into a 32-bit sequence - with 1-byte for each
-of the colors.
+One common format C libraries support is **packed colour**. With *packed
+colour* the R, G, B and A values for a single pixel are stored into a
+32-bit sequence - with 1-byte for each of the colors.
 
 `pixelweaver` provides functions for converting R’s planar color
-representation to/from packed pixel representation.
+representation to/from packed colour representation.
 
-An overview/schematic of the pixel representations and where
+An overview/schematic of the color representations and where
 `pixelweaver` sits is illustrated below.
 
 ![](man/figures/array-representation.png)
 
 ## ToDo
 
-  - Support direct use of a vector of raw data in `packed_to_planar()`
-  - Support direct output of a vector of raw data from
-    `planar_to_packed()`
   - Support copying into pre-allocated arrays to avoid having to
     allocate new memory each time.
   - Faster algorithms for the transpose and shuffle. MMX? SSE? AVX?
@@ -63,18 +51,16 @@ remotes::install_github('coolbutuseless/pixelweaver')
 ## What’s in the box
 
   - `packed_to_planar()`, `planar_to_packed()` - convert matrices and
-    arrays to/from packed pixel formats. These functions store the
-    packed data as a sequence of bytes in memory and return an external
-    pointer to this memory.
-  - `packed_to_raw()`, `raw_to_packed()` - convert the package packed
-    format from an external pointer (to data in memory) to a vector of
-    raw values in R. These functions are different from the `planar`
-    functions in that the data is returned in the same layout as the
-    memory i.e. raw vector represents pixels in row-major format, not
-    column-major
-  - Support for ARGB32, RGBA32 and ABGR32 pixel format.
+    arrays to/from packed color formats.  
+  - `packed_to_raw()`, `raw_to_packed()` - convert the packed color
+    format from an external pointer (pointing to data in memory) to a
+    vector of raw values in R. These functions are different from the
+    `planar` functions in that the data is returned in the same layout
+    as the memory i.e. raw vector represents pixels in row-major format,
+    not column-major
+  - Support for ARGB32, RGBA32 and ABGR32 pixel formats.
 
-## Conversion of an RGBA array to ARGB32 format and back again.
+## Conversion of an planar array to packed ARGB32 format and back again.
 
 ``` r
 library(pixelweaver)
@@ -120,11 +106,12 @@ plot(as.raster(arr), interpolate = FALSE)
 # Convert the R planar color representation to packed ARGB32 format 
 # This is a pointer to a memory location that contains the data
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-packed_ptr <- planar_to_packed(arr, format = pack_fmt$ARGB32, maxval = 1)
+packed_ptr <- planar_to_packed(arr, format = packed_fmt$ARGB32, maxval = 1, as_ptr = TRUE )
+packed_raw <- planar_to_packed(arr, format = packed_fmt$ARGB32, maxval = 1, as_ptr = FALSE)
 packed_ptr
 ```
 
-    #> <pointer: 0x7fbc286983c0>
+    #> <pointer: 0x7f8ca71ad1c0>
     #> attr(,"class")
     #> [1] "unsigned char"
 
@@ -133,7 +120,7 @@ packed_ptr
 # View the raw data. Note the value = 255 every 4th value - this is the 
 # default alpha value set for each pixel
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-as.integer(packed_to_raw(packed_ptr))
+as.integer(packed_raw)
 ```
 
     #>  [1] 177  92   7 255 205 120  35 255 233 148  63 255 184  99  14 255 212 127  42
@@ -145,7 +132,7 @@ as.integer(packed_to_raw(packed_ptr))
 # Convert the R, G and Blue values from the packed ARGB32 representation 
 # back into the original representation
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-(arr_out <- packed_to_planar(packed_ptr, format = pack_fmt$ARGB32, nchannel = 3))
+(arr_out <- packed_to_planar(packed_ptr, format = packed_fmt$ARGB32, nchannel = 3))
 ```
 
     #> , , 1
@@ -183,7 +170,7 @@ plot(as.raster(arr_out), interpolate = FALSE)
 # Convert the R, G and Blue values from the packed ARGB32 representation 
 # back into a grey matrix using  0.3R + 0.59G + 0.11B
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-(mat_out <- packed_to_planar(packed_ptr, format = pack_fmt$ARGB32, nchannel = 1))
+(mat_out <- packed_to_planar(packed_ptr, format = packed_fmt$ARGB32, nchannel = 1))
 ```
 
     #>           [,1]      [,2]      [,3]
@@ -197,6 +184,56 @@ plot(as.raster(mat_out), interpolate = FALSE)
 ```
 
 <img src="man/figures/README-example-3.png" width="40%" />
+
+## Unpacking packed colour stored in vector of raw values
+
+Packed color stored as vectors of raw values can come from other
+libraries, and these vectors can be directly unpacked to planar color.
+
+``` r
+packed_raw
+```
+
+    #>  [1] b1 5c 07 ff cd 78 23 ff e9 94 3f ff b8 63 0e ff d4 7f 2a ff f0 9b 46 ff bf
+    #> [26] 6a 15 ff db 86 31 ff f7 a2 4d ff c6 71 1c ff e2 8d 38 ff ff aa 55 ff
+
+``` r
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Convert the R, G and Blue values from the packed ARGB32 representation 
+# back into the original representation
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+(arr_out <- packed_to_planar(packed_raw, format = packed_fmt$ARGB32, nchannel = 3, width=3, height=4))
+```
+
+    #> , , 1
+    #> 
+    #>            [,1]      [,2]      [,3]
+    #> [1,] 0.02745098 0.1372549 0.2470588
+    #> [2,] 0.05490196 0.1647059 0.2745098
+    #> [3,] 0.08235294 0.1921569 0.3019608
+    #> [4,] 0.10980392 0.2196078 0.3333333
+    #> 
+    #> , , 2
+    #> 
+    #>           [,1]      [,2]      [,3]
+    #> [1,] 0.3607843 0.4705882 0.5803922
+    #> [2,] 0.3882353 0.4980392 0.6078431
+    #> [3,] 0.4156863 0.5254902 0.6352941
+    #> [4,] 0.4431373 0.5529412 0.6666667
+    #> 
+    #> , , 3
+    #> 
+    #>           [,1]      [,2]      [,3]
+    #> [1,] 0.6941176 0.8039216 0.9137255
+    #> [2,] 0.7215686 0.8313725 0.9411765
+    #> [3,] 0.7490196 0.8588235 0.9686275
+    #> [4,] 0.7764706 0.8862745 1.0000000
+
+``` r
+plot(as.raster(arr_out), interpolate = FALSE)
+```
+
+<img src="man/figures/README-unnamed-chunk-2-1.png" width="40%" />
 
 ## Acknowledgements
 

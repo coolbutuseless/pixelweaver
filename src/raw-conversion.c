@@ -72,7 +72,7 @@ SEXP packed_to_raw_(SEXP packed_ptr_) {
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Set dimensions on packed pointer
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-SEXP packed_set_dim_(SEXP packed_ptr_, SEXP w_, SEXP h_) {
+SEXP packed_ptr_set_dim_(SEXP packed_ptr_, SEXP w_, SEXP h_) {
   SEXP outdim = PROTECT(allocVector(INTSXP, 2));
   INTEGER(outdim)[0] = INTEGER(h_)[0];
   INTEGER(outdim)[1] = INTEGER(w_)[0];

@@ -2,20 +2,26 @@
 % Please edit documentation in R/weave.R
 \name{packed_to_planar}
 \alias{packed_to_planar}
-\title{Convert an object with packed pixels into array of color values in R}
+\title{Convert an object with packed color data into planar color array in R}
 \usage{
-packed_to_planar(packed_ptr, format, nchannel)
+packed_to_planar(packed_data, format, nchannel, width = -1L, height = -1L)
 }
 \arguments{
-\item{packed_ptr}{An object containing packed pixel data. This is an external pointer
-to data.}
+\item{packed_data}{An object containing packed color data. This can be a
+vector of raw values, or an external pointer to data.}
 
 \item{format}{Integer value denoting the packed format. 0L = ARGB32,
-1L = RGBA32, 2L = ABGR32.  See also \code{?pack_fmt}.}
+1L = RGBA32, 2L = ABGR32.  See also \code{?packed_fmt}.}
 
-\item{nchannel}{Number of color channels in the planar representation. 1 = grey,
+\item{nchannel}{Number of color channels in the output i.e. the number of
+color planes in the matrix or array. 1 = grey (matrix),
 3 = RGB, 4 = RGBA}
+
+\item{width, height}{dimensions of image. This must be specified when
+\code{packed_data} is a vector of raw values, or if the external pointer
+to data was created by another library and \code{packed_ptr_set_dim} has
+not been used.}
 }
 \description{
-Convert an object with packed pixels into array of color values in R
+Convert an object with packed color data into planar color array in R
 }

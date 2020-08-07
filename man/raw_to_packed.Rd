@@ -12,7 +12,7 @@ raw_to_packed(raw_vec, width, height)
 \item{width, height}{image dimensions}
 }
 \value{
-An external pointer to packed pixel data
+An external pointer to packed color data
 }
 \description{
 This function copies the original data into a new object and returns a

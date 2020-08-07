@@ -4,11 +4,11 @@ NULL
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#' Packed pixel formats
+#' Supported packed color formats
 #'
 #' @export
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-pack_fmt <- list(
+packed_fmt <- list(
   ARGB32 = 0L,
   RGBA32 = 1L,
   ABGR32 = 2L

@@ -2,24 +2,28 @@
 % Please edit documentation in R/weave.R
 \name{planar_to_packed}
 \alias{planar_to_packed}
-\title{Convert a matrix or array into packed pixel format}
+\title{Convert a matrix or array into packed color format}
 \usage{
-planar_to_packed(robj, format, maxval)
+planar_to_packed(planar_data, format, maxval, as_ptr)
 }
 \arguments{
-\item{robj}{R representation. Either a matrix (representing grey values), or
+\item{planar_data}{R object containing planar color data.
+Either a matrix (representing grey values), or
 an array with 3 or 4 planes (representing RGB and RGBA color
 respectively).  Data must be double precision floating point.}
 
 \item{format}{Integer value denoting the packed format. 0L = ARGB32,
-1L = RGBA32, 2L = ABGR32.  See also \code{?pack_fmt}.}
+1L = RGBA32, 2L = ABGR32.  See also \code{?packed_fmt}.}
 
 \item{maxval}{specify the maximum possible value in the \code{robj} data.
 This is used to scale the results into the range required for packed
 pixel representations.
 For standard R image representations, data is often in the range
 [0,1] so use \code{maxval=1}}
+
+\item{as_ptr}{Logical: Return value as an external pointer to memory in C?
+Default: FALSE - return a standard R vector of raw values}
 }
 \description{
-Convert a matrix or array into packed pixel format
+Convert a matrix or array into packed color format
 }

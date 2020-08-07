@@ -1,10 +1,11 @@
 Package: pixelweaver
 Type: Package
-Title: Convert Planar Color Arrays to Packed Pixel Formats
-Version: 0.1.1
+Title: Convert Planar Color Arrays to Packed Color Formats
+Version: 0.1.2
 Author: mikefc
 Maintainer: mikefc <mikefc@coolbutuseless.com>
-Description: Convert planar color arrays to packed pixel formats e.g. ARGB32
+Description: Convert planar color arrays to packed color formats - ARGB32,
+  RGBA32, ABGR32.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
