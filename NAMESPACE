@@ -2,8 +2,11 @@
 
 export(packed_fmt)
 export(packed_ptr_set_dim)
+export(packed_ptr_to_raw)
+export(packed_raw_to_ptr)
 export(packed_to_planar)
-export(packed_to_raw)
 export(planar_to_packed)
-export(raw_to_packed)
+export(shuffle)
+export(write_pam)
+export(write_pam_raw)
 useDynLib(pixelweaver, .registration=TRUE)

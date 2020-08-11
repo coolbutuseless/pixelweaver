@@ -7,7 +7,7 @@ test_that("conversion to/from grey matrix works", {
   res  <- packed_to_planar(packed_ptr, format = 0L, nchannel = 1)
   expect_true(isTRUE(all.equal(mat, res)))
 
-  packed_raw <- packed_to_raw(packed_ptr)
+  packed_raw <- packed_ptr_to_raw(packed_ptr)
 
   raw_ref <- as.raw(c(
     1,  1,  1, 255,
@@ -26,8 +26,8 @@ test_that("conversion to/from grey matrix works", {
 
   expect_identical(packed_raw, raw_ref)
 
-  a2 <- raw_to_packed(packed_raw, width = 3L, height = 4L)
-  r2 <- packed_to_raw(a2)
+  a2 <- packed_raw_to_ptr(packed_raw, width = 3L, height = 4L)
+  r2 <- packed_ptr_to_raw(a2)
 
   expect_identical(packed_raw, r2)
 
@@ -42,7 +42,7 @@ test_that("conversion to/from rgb array works", {
   expect_true(isTRUE(all.equal(arr, res)))
 
 
-  packed_raw <- packed_to_raw(packed_ptr)
+  packed_raw <- packed_ptr_to_raw(packed_ptr)
 
   raw_ref <- as.raw(c(
     0x19, 0x0d, 0x01, 0xff, 0x1d, 0x11, 0x05, 0xff, 0x21,
@@ -54,8 +54,8 @@ test_that("conversion to/from rgb array works", {
 
   expect_identical(packed_raw, raw_ref)
 
-  a2 <- raw_to_packed(packed_raw, width = 3L, height = 4L)
-  r2 <- packed_to_raw(a2)
+  a2 <- packed_raw_to_ptr(packed_raw, width = 3L, height = 4L)
+  r2 <- packed_ptr_to_raw(a2)
 
   expect_identical(packed_raw, r2)
 })
@@ -69,7 +69,7 @@ test_that("conversion to/from rgba array works", {
   expect_true(isTRUE(all.equal(arr, res)))
 
 
-  packed_raw <- packed_to_raw(packed_ptr)
+  packed_raw <- packed_ptr_to_raw(packed_ptr)
 
   raw_ref <- as.raw(c(
     0x19, 0x0d, 0x01, 0x25, 0x1d, 0x11, 0x05, 0x29, 0x21,
@@ -81,14 +81,14 @@ test_that("conversion to/from rgba array works", {
 
   expect_identical(packed_raw, raw_ref)
 
-  a2 <- raw_to_packed(packed_raw, width = 3L, height = 4L)
-  r2 <- packed_to_raw(a2)
+  a2 <- packed_raw_to_ptr(packed_raw, width = 3L, height = 4L)
+  r2 <- packed_ptr_to_raw(a2)
 
   expect_identical(packed_raw, r2)
 
 
 
-  expect_error(raw_to_packed(packed_raw, width = 3L, height = 5L), "Length")
+  expect_error(packed_raw_to_ptr(packed_raw, width = 3L, height = 5L), "Length")
 })
 
 

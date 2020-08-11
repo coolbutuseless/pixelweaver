@@ -87,7 +87,7 @@ SEXP dbl_array_to_packed_(SEXP src_, SEXP maxval_, SEXP format_, SEXP as_ptr_) {
   unsigned char *dst;
   if (as_ptr == 1) {
     dst = (unsigned char *)calloc(w*h*4, sizeof(unsigned char));
-    result_ = PROTECT(R_MakeExternalPtr(dst, R_NilValue, outdim));
+    result_ = PROTECT(R_MakeExternalPtr(dst, outdim, R_NilValue));
     SET_CLASS(result_, mkString("unsigned char"));
     R_RegisterCFinalizer(result_, generic_finalizer);
   } else {

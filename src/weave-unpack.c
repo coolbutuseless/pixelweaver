@@ -56,9 +56,9 @@ SEXP packed_to_dbl_array_(SEXP src_, SEXP format_, SEXP nchannel_, SEXP width_, 
     if (src == NULL) error("packed_to_dbl_array_: 'unsigned char * src' pointer is invalid/NULL");
 
 
-    SEXP prot_ = R_ExternalPtrProtected(src_);
+    SEXP tag_ = R_ExternalPtrTag(src_);
 
-    if (isNull(prot_)) {
+    if (isNull(tag_)) {
       if (height <= 0 || width <= 0) {
         error("packed_to_dbl_array_(): Packed pointer from external sources requires height and width. Got (%i, %i)", height, width);
       }
@@ -68,8 +68,8 @@ SEXP packed_to_dbl_array_(SEXP src_, SEXP format_, SEXP nchannel_, SEXP width_, 
       if (height > 0 || width > 0) {
         warning("packed_to_dbl_array_(): User specified height and width ignored for pointer with dimensions");
       }
-      h = INTEGER(prot_)[0];
-      w = INTEGER(prot_)[1];
+      h = INTEGER(tag_)[0];
+      w = INTEGER(tag_)[1];
     }
   }
 

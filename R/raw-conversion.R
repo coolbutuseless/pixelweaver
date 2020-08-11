@@ -12,7 +12,7 @@
 #' @return An external pointer to packed color data
 #' @export
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-raw_to_packed <- function(raw_vec, width, height) {
+packed_raw_to_ptr <- function(raw_vec, width, height) {
   .Call(raw_to_packed_, raw_vec, width, height)
 }
 
@@ -28,6 +28,6 @@ raw_to_packed <- function(raw_vec, width, height) {
 #' @return raw vector
 #' @export
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-packed_to_raw <- function(packed_ptr) {
+packed_ptr_to_raw <- function(packed_ptr) {
   .Call(packed_to_raw_, packed_ptr)
 }

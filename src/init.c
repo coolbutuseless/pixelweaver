@@ -11,6 +11,8 @@ extern SEXP packed_to_raw_();
 
 extern SEXP packed_ptr_set_dim_();
 
+extern SEXP shuffle_();
+
 static const R_CallMethodDef CEntries[] = {
 
   // name                       pointer                       Num args
@@ -21,6 +23,8 @@ static const R_CallMethodDef CEntries[] = {
   {"packed_to_raw_" , (DL_FUNC) &packed_to_raw_ , 1},
 
   {"packed_ptr_set_dim_", (DL_FUNC) &packed_ptr_set_dim_, 3},
+
+  {"shuffle_", (DL_FUNC) &shuffle_, 3},
 
   {NULL , NULL, 0}
 };

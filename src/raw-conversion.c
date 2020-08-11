@@ -33,7 +33,7 @@ SEXP raw_to_packed_(SEXP raw_, SEXP w_, SEXP h_) {
   INTEGER(outdim)[0] = h;
   INTEGER(outdim)[1] = w;
 
-  SEXP result_ = PROTECT(R_MakeExternalPtr(dst, R_NilValue, outdim));
+  SEXP result_ = PROTECT(R_MakeExternalPtr(dst, outdim, R_NilValue));
   SET_CLASS(result_, mkString("unsigned char"));
   R_RegisterCFinalizer(result_, generic_finalizer);
 
@@ -53,12 +53,12 @@ SEXP packed_to_raw_(SEXP packed_ptr_) {
   packed_ptr = isNull(packed_ptr_) ? NULL : (unsigned char *)R_ExternalPtrAddr(packed_ptr_);
   if (packed_ptr == NULL) error("packed_ptr_to_raw_: 'unsigned char * src' pointer is invalid/NULL");
 
-  SEXP prot_ = R_ExternalPtrProtected(packed_ptr_);
-  if (isNull(prot_)) {
-    error("Need 'prot' set on external pointer");
+  SEXP tag_ = R_ExternalPtrTag(packed_ptr_);
+  if (isNull(tag_)) {
+    error("Need 'tag_' set on external pointer");
   }
-  int h = INTEGER(prot_)[0];
-  int w = INTEGER(prot_)[1];
+  int h = INTEGER(tag_)[0];
+  int w = INTEGER(tag_)[1];
 
 
   SEXP result_ = PROTECT(allocVector(RAWSXP, w*h*4));
@@ -77,7 +77,7 @@ SEXP packed_ptr_set_dim_(SEXP packed_ptr_, SEXP w_, SEXP h_) {
   INTEGER(outdim)[0] = INTEGER(h_)[0];
   INTEGER(outdim)[1] = INTEGER(w_)[0];
 
-  R_SetExternalPtrProtected(packed_ptr_, outdim);
+  R_SetExternalPtrTag(packed_ptr_, outdim);
   UNPROTECT(1);
   return packed_ptr_;
 }

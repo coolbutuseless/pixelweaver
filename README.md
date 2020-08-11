@@ -52,12 +52,15 @@ remotes::install_github('coolbutuseless/pixelweaver')
 
   - `packed_to_planar()`, `planar_to_packed()` - convert matrices and
     arrays to/from packed color formats.  
-  - `packed_to_raw()`, `raw_to_packed()` - convert the packed color
-    format from an external pointer (pointing to data in memory) to a
-    vector of raw values in R. These functions are different from the
-    `planar` functions in that the data is returned in the same layout
-    as the memory i.e. raw vector represents pixels in row-major format,
-    not column-major
+  - `packed_ptr_to_raw()`, `packed_raw_to_ptr()` - convert the packed
+    color format from an external pointer (pointing to data in memory)
+    to a vector of raw values in R. These functions are different from
+    the `planar` functions in that the data is returned in the same
+    layout as the memory i.e. raw vector represents pixels in row-major
+    format, not column-major
+  - `shuffle()` - shuffle the arrangement of packed color in a vector of
+    raw values. The shuffling is done in place, without allocating new
+    storage.
   - Support for ARGB32, RGBA32 and ABGR32 pixel formats.
 
 ## Conversion of an planar array to packed ARGB32 format and back again.
@@ -111,7 +114,7 @@ packed_raw <- planar_to_packed(arr, format = packed_fmt$ARGB32, maxval = 1, as_p
 packed_ptr
 ```
 
-    #> <pointer: 0x7f8ca71ad1c0>
+    #> <pointer: 0x7f80ea54d160>
     #> attr(,"class")
     #> [1] "unsigned char"
 
