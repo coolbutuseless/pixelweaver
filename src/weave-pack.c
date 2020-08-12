@@ -37,7 +37,8 @@ SEXP dbl_array_to_packed_(SEXP src_, SEXP maxval_, SEXP format_, SEXP as_ptr_) {
   int format = INTEGER(format_)[0];
   int as_ptr = INTEGER(as_ptr_)[0];
 
-  int h, w, nchannel;
+  int h, w;
+  int nchannel = 1;
 
   if (!isArray(src_) && !isMatrix(src_)) {
     error("dbl_array_to_packed_(): src must be an array or matrix");
